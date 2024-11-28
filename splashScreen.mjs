@@ -1,4 +1,4 @@
-import { ANSI } from "./utils/ANSI.mjs";
+import ANSI from "./utils/ANSI.mjs";
 
 
 const outputGraphics = `

@@ -75,4 +75,4 @@ const ANSI = {
     }
 }
 
-export default ANSI 
+export default ANSI;
