@@ -15,7 +15,7 @@ let playerPos = { row: null, col: null};
 const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$";
-const DOOR = "█";
+const DOOR = "1";
 
 const THINGS = [LOOT, EMPTY, DOOR];
 let eventText = "";
