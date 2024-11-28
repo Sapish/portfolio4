@@ -64,8 +64,8 @@ class Labyrinth {
         const tRow = playerPos.row + drow;
         const tCol = playerPos.col + dcol;
 
-        if (THINGS.includes(levelData[tRow][tcol])) {
-            const currentItem = levelData[tRow][tcol];
+        if (THINGS.includes(levelData[tRow][tCol])) {
+            const currentItem = levelData[tRow][tCol];
 
             if (currentItem === LOOT) {
                 const LOOT = Math.round(Math.random() * 7) + 3;
@@ -77,9 +77,9 @@ class Labyrinth {
             }
             
             levelData[playerPos.row][playerPos.col] = EMPTY;
-            levelData[tRow][tcol] = HERO;
+            levelData[tRow][tCol] = HERO;
             playerPos.row = tRow;
-            playerPos.col = tcol;
+            playerPos.col = tCol;
 
             isDirty = true;
         }
