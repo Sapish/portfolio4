@@ -2,171 +2,144 @@ import ANSI from "./utils/ANSI.mjs";
 import KeyBoardManager from "./utils/KeyBoardManager.mjs";
 import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
+import { start } from "repl";
 
 
 const startingLevel = CONST.START_LEVEL_ID;
 const levels = loadLevelListings();
 
-function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
-    let data = readRecordFile(source);
-    let levels = {};
-    for (const item of data) {
-        let keyValue = item.split(":");
-        if (keyValue.length >= 2) {
-            let key = keyValue[0];
-            let value = keyValue[1];
-            levels[key] = value;
-        }
-    }
-    return levels;
-}
+let currentLevel = startingLevel;
+let levelData = readMapFile(levels[currentLevel]);
+let playerPos = { row: null, col: null};
 
-let levelData = readMapFile(levels[startingLevel]);
-let level = levelData;
+const EMPTY = " ";
+const HERO = "H";
+const LOOT = "$";
+const DOOR = "█";
+
+const THINGS = [LOOT, EMPTY, DOOR];
+let eventText = "";
+
+const HP_MAX = 10;
+const playerStats = {
+    hp: 8,
+    chash: 0,
+};
+
+let isDirty = true;
 
 let pallet = {
     "█": ANSI.COLOR.LIGHT_GRAY,
     "H": ANSI.COLOR.RED,
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
-}
-
-
-let isDirty = true;
-
-let playerPos = {
-    row: null,
-    col: null,
-}
-
-const EMPTY = " ";
-const HERO = "H";
-const LOOT = "$"
-
-let direction = -1;
-
-let items = [];
-
-const THINGS = [LOOT, EMPTY];
-
-let eventText = "";
-
-const HP_MAX = 10;
-
-const playerStats = {
-    hp: 8,
-    chash: 0
-}
+};
 
 class Labyrinth {
 
     update() {
-
         if (playerPos.row == null) {
-            for (let row = 0; row < level.length; row++) {
-                for (let col = 0; col < level[row].length; col++) {
-                    if (level[row][col] == "H") {
+            for (let row = 0; row < levelData.length; row++) {
+                for (let col = 0; col < levelData[row].length; col++) {
+                    if (levelData[row][col] === HERO) {
                         playerPos.row = row;
                         playerPos.col = col;
                         break;
                     }
                 }
-                if (playerPos.row != undefined) {
-                    break;
-                }
+                if (playerPos.row !== null) break;
             }
         }
+        
 
         let drow = 0;
         let dcol = 0;
 
-        if (KeyBoardManager.isUpPressed()) {
-            drow = -1;
-        } else if (KeyBoardManager.isDownPressed()) {
-            drow = 1;
-        }
+        if (KeyBoardManager.isUpPressed()) drow = -1;
+        else if (KeyBoardManager.isDownPressed()) drow = 1;
 
-        if (KeyBoardManager.isLeftPressed()) {
-            dcol = -1;
-        } else if (KeyBoardManager.isRightPressed()) {
-            dcol = 1;
-        }
+        if (KeyBoardManager.isLeftPressed()) dcol = -1;
+        else if (KeyBoardManager.isRightPressed()) dcol = 1;
 
-        let tRow = playerPos.row + (1 * drow);
-        let tcol = playerPos.col + (1 * dcol);
+        const tRow = playerPos.row + drow;
+        const tCol = playerPos.col + dcol;
 
-        if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
+        if (THINGS.includes(levelData[tRow][tcol])) {
+            const currentItem = levelData[tRow][tcol];
 
-            let currentItem = level[tRow][tcol];
-            if (currentItem == LOOT) {
-                let loot = Math.round(Math.random() * 7) + 3;
-                playerStats.chash += loot;
-                eventText = `Player gained ${loot}$`;
+            if (currentItem === LOOT) {
+                const LOOT = Math.round(Math.random() * 7) + 3;
+                playerStats.chash += LOOT;
+                eventText = `Player got ${loot}$`;
+            }else if (currentItem === DOOR) {
+                this.transitionToLevel("aSharpPlace");
+                return;
             }
-
-            // Move the HERO
-            level[playerPos.row][playerPos.col] = EMPTY;
-            level[tRow][tcol] = HERO;
-
-            // Update the HERO
+            
+            levelData[playerPos.row][playerPos.col] = EMPTY;
+            levelData[tRow][tcol] = HERO;
             playerPos.row = tRow;
             playerPos.col = tcol;
 
-            // Make the draw function draw.
             isDirty = true;
-        } else {
-            direction *= -1;
         }
     }
 
     draw() {
 
-        if (isDirty == false) {
-            return;
-        }
-        isDirty = false;
+        if (!isDirty) return;
+            isDirty = false;
 
         console.log(ANSI.CLEAR_SCREEN, ANSI.CURSOR_HOME);
 
-        let rendring = "";
+        let rendring = this.renderHud();
 
-        rendring += renderHud();
-
-        for (let row = 0; row < level.length; row++) {
+        for (let row = 0; row < levelData.length; row++) {
             let rowRendering = "";
-            for (let col = 0; col < level[row].length; col++) {
-                let symbol = level[row][col];
-                if (pallet[symbol] != undefined) {
-                    rowRendering += pallet[symbol] + symbol + ANSI.COLOR_RESET;
-                } else {
-                    rowRendering += symbol;
-                }
+            for (let col = 0; col < levelData[row].length; col++) {
+                const symbol = levelData[row][col];
+                rowRendering += pallet[symbol] ? pallet[symbol] + symbol + ANSI.COLOR_RESET : symbol;
             }
-            rowRendering += "\n";
-            rendring += rowRendering;
+            rendring += rowRendering + "\n";
         }
 
         console.log(rendring);
-        if (eventText != "") {
+        if (eventText) {
             console.log(eventText);
             eventText = "";
         }
     }
-}
 
-function renderHud() {
-    let hpBar = `Life:[${ANSI.COLOR.RED + pad(playerStats.hp, "♥︎") + ANSI.COLOR_RESET}${ANSI.COLOR.LIGHT_GRAY + pad(HP_MAX - playerStats.hp, "♥︎") + ANSI.COLOR_RESET}]`
-    let cash = `$:${playerStats.chash}`;
+renderHud() {
+    const hpBar = `Life:[${ANSI.COLOR.RED}${this.pad(playerStats.hp, "♥︎")}${ANSI.COLOR_RESET}${ANSI.COLOR.LIGHT_GRAY}${this.pad(HP_MAX - playerStats.hp, "♥︎")}${ANSI.COLOR_RESET}]`;
+    const cash = `$:${playerStats.chash}`;
     return `${hpBar} ${cash}\n`;
 }
 
-function pad(len, text) {
-    let output = "";
-    for (let i = 0; i < len; i++) {
-        output += text;
-    }
-    return output;
+    pad(len, text) {
+    return Array(len).fill(text).join("");
 }
 
+transitionToLevel(newLevel) {
+    currentLevel = newLevel;
+    levelData = readMapFile(levels[currentLevel]);
+    playerPos.row = null;
+    playerPos.col = null;
+    console.log(`Transitioned to level: ${newLevel}`);
+    isDirty = true;
+    }
+}
+
+function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
+    const data = readRecordFile(source);
+    const levels = {};
+    for (const item of data) {
+        const [key, value] = item.split(":");
+        if (key && value) {
+            levels[key.trim()] = value.trim();
+        }
+    }
+    return levels;
+}
 
 export default Labyrinth;
