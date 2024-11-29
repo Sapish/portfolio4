@@ -16,7 +16,7 @@ const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$";
 const DOOR = "1";
-const TELEPORT_SYMBOL = "♨︎";
+const TELEPORT_SYMBOL = "T";
 
 const THINGS = [LOOT, EMPTY, DOOR, "2"];
 let eventText = "";
@@ -56,6 +56,24 @@ function findTeleportLocations(levelData) {
     return teleportLocations;
 }
 
+function handleTeleport(playerPos, teleportLocations) {
+    if (teleportLocations.length === 2) {
+        const [location1, location2] = teleportLocations;
+
+        const target = (playerPos.row === location1.row && playerPos.col === location1.col)
+        ? location2
+        : location1;
+
+        levelData[playerPos.row][playerPos.col] = EMPTY;
+        levelData[target.row][target.col] = HERO;
+        playerPos.row = target.row;
+        playerPos.col = target.col;
+
+        eventText = "You teleported!";
+        isDirty = true;
+    }
+}
+
 class Labyrinth {
 
     update() {
@@ -84,6 +102,16 @@ class Labyrinth {
 
         const tRow = playerPos.row + drow;
         const tCol = playerPos.col + dcol;
+
+        if (tRow >= 0 && tRow < levelData.length && tCol >= 0 && tCol < levelData[tRow].length) {
+            const currentItem = levelData[tRow][tCol];
+
+            if (currentItem === TELEPORT_SYMBOL) {
+                const teleportLocations = findTeleportLocations(levelData);
+                handleTeleport(playerPos, teleportLocations);
+                return;
+            }
+        }
 
         if (THINGS.includes(levelData[tRow][tCol])) {
             const currentItem = levelData[tRow][tCol];
