@@ -53,10 +53,12 @@ function findTeleportLocations(levelData) {
 
         }
     }
+    console.log("tp found: ", teleportLocations); //DEBUG TESTING
     return teleportLocations;
 }
 
 function handleTeleport(playerPos, teleportLocations) {
+    
     if (teleportLocations.length === 2) {
         const [location1, location2] = teleportLocations;
 
@@ -64,13 +66,20 @@ function handleTeleport(playerPos, teleportLocations) {
         ? location2
         : location1;
 
+console.log(`Teleporting from (${playerPos.row}, ${playerPos.col}) to (${target.row}, ${target.col})`); //DEBUG TESTING
+
         levelData[playerPos.row][playerPos.col] = EMPTY;
         levelData[target.row][target.col] = HERO;
+console.log("updated leveldata after teleportation:", levelData); //DEBUG TESTING
+
         playerPos.row = target.row;
         playerPos.col = target.col;
+console.log("updated player position:", playerPos); //DEBUG TESTING
 
         eventText = "You teleported!";
         isDirty = true;
+    } else {
+        console.log("teleport failed: teleport locations are incomplete or incorrect"); //DEBUG TESTING
     }
 }
 
