@@ -18,7 +18,7 @@ const LOOT = "$";
 const DOOR = "1";
 const TELEPORT_SYMBOL = "T";
 
-const THINGS = [LOOT, EMPTY, DOOR, "2"];
+const THINGS = [LOOT, EMPTY, DOOR, "2", "0"];
 let eventText = "";
 
 const HP_MAX = 10;
@@ -40,7 +40,7 @@ let pallet = {
 const DOORS = {
     "1": "aSharpPlace",
     "2": "level3",
-    "1-back": "aSharpPlace"
+    "0": "start"
 };
 
 function findTeleportLocations(levelData) {
