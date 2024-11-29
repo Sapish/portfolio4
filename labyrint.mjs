@@ -2,7 +2,6 @@ import ANSI from "./utils/ANSI.mjs";
 import KeyBoardManager from "./utils/KeyBoardManager.mjs";
 import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
-import { start } from "repl";
 
 
 const startingLevel = CONST.START_LEVEL_ID;
