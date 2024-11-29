@@ -17,6 +17,7 @@ const HERO = "H";
 const LOOT = "$";
 const DOOR = "1";
 const TELEPORT_SYMBOL = "T";
+const PATROL_BOT = "X";
 
 const THINGS = [LOOT, EMPTY, DOOR, "2", "0"];
 let eventText = "";
@@ -59,29 +60,52 @@ function findTeleportLocations(levelData) {
 function handleTeleport(playerPos, teleportLocations) {
     
     if (teleportLocations.length === 2) {
-        const [location1, location2] = teleportLocations;
-
-        const target = (playerPos.row === location1.row && playerPos.col === location1.col)
-        ? location2
-        : location1;
+        const [loc1, loc2] = teleportLocations;
+        const target = playerPos.row === loc1.row && playerPos.col === loc1.col ? loc2 : loc1;
 
         levelData[playerPos.row][playerPos.col] = EMPTY;
-        levelData[target.row][target.col] = HERO;
-
         playerPos.row = target.row;
         playerPos.col = target.col;
-
-        eventText = "You teleported!";
-        isDirty = true;
-    } else {
-        console.log("Teleport failed!");
+        levelData[playerPos.row][playerPos.col] = HERO;
     }
 }
 
 class Labyrinth {
+    constructor() {
+        this.npcs = [];
+        this.findNPCs();
+    }
+
+    findNPCs() {
+        this.npcs = [];
+        for (let row = 0; row < levelData.length; row++) {
+            for (let col = 0; col < levelData[row].length; col++) {
+                if (levelData[row][col] === PATROL_BOT) {
+                    this.npcs.push({ row, col, startCol: col, direction: 1 });
+                }
+            }
+        }
+    }
+
+updateNPCs() {
+    for (const npc of this.npcs) {
+        levelData[npc.row][npc.col] = EMPTY;
+        npc.col += npc.direction;
+
+        if (npc.col > npc.startCol + 2 || npc.col < npc.startCol - 2 || levelData[npc.row][npc.col] !== EMPTY) {
+            npc.direction *= -1;
+            npc.col += npc.direction;
+        }
+        levelData[npc.row][npc.col] = PATROL_BOT;
+    }
+}
 
     update() {
         if (playerPos.row == null) {
+            this.updateNPCs();
+            isDirty = true;
+
+        }
             for (let row = 0; row < levelData.length; row++) {
                 for (let col = 0; col < levelData[row].length; col++) {
                     if (levelData[row][col] === HERO) {
@@ -92,7 +116,6 @@ class Labyrinth {
                 }
                 if (playerPos.row !== null) break;
             }
-        }
         
 
         let dRow = 0;
@@ -179,6 +202,7 @@ transitionToLevel(newLevel) {
     levelData = readMapFile(levels[currentLevel]);
     playerPos.row = null;
     playerPos.col = null;
+    this.findNPCs();
     console.log(`Transitioned to level: ${newLevel}`);
     isDirty = true;
     }
