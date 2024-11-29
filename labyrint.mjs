@@ -92,7 +92,11 @@ updateNPCs() {
         levelData[npc.row][npc.col] = EMPTY;
         npc.col += npc.direction;
 
-        if (npc.col > npc.startCol + 2 || npc.col < npc.startCol - 2 || levelData[npc.row][npc.col] !== EMPTY) {
+        if (
+            npc.col > npc.startCol + 2 ||
+            npc.col < npc.startCol - 2 ||
+            levelData[npc.row][npc.col] !== EMPTY
+        ) {
             npc.direction *= -1;
             npc.col += npc.direction;
         }
