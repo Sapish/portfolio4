@@ -16,6 +16,7 @@ const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$";
 const DOOR = "1";
+const TELEPORT_SYMBOL = "♨︎";
 
 const THINGS = [LOOT, EMPTY, DOOR, "2"];
 let eventText = "";
@@ -41,6 +42,20 @@ const DOORS = {
     "2": "level3",
     "1-back": "aSharpPlace"
 };
+
+function findTeleportLocations(levelData) {
+    const teleportLocations = [];
+    for (let row = 0; row < levelData.length; row++) {
+        for (let col = 0; col < levelData[row].length; col++) {
+            if (levelData[row][col] === TELEPORT_SYMBOL) {
+                teleportLocations.push({ row, col });
+            }
+
+        }
+    }
+    return teleportLocations;
+}
+
 class Labyrinth {
 
     update() {
