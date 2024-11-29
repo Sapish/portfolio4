@@ -24,7 +24,7 @@ let eventText = "";
 const HP_MAX = 10;
 const playerStats = {
     hp: 8,
-    chash: 0,
+    cash: 0,
 };
 
 let isDirty = true;
@@ -53,7 +53,6 @@ function findTeleportLocations(levelData) {
 
         }
     }
-    console.log("tp found: ", teleportLocations); //DEBUG TESTING
     return teleportLocations;
 }
 
@@ -66,20 +65,16 @@ function handleTeleport(playerPos, teleportLocations) {
         ? location2
         : location1;
 
-console.log(`Teleporting from (${playerPos.row}, ${playerPos.col}) to (${target.row}, ${target.col})`); //DEBUG TESTING
-
         levelData[playerPos.row][playerPos.col] = EMPTY;
         levelData[target.row][target.col] = HERO;
-console.log("updated leveldata after teleportation:", levelData); //DEBUG TESTING
 
         playerPos.row = target.row;
         playerPos.col = target.col;
-console.log("updated player position:", playerPos); //DEBUG TESTING
 
         eventText = "You teleported!";
         isDirty = true;
     } else {
-        console.log("teleport failed: teleport locations are incomplete or incorrect"); //DEBUG TESTING
+        console.log("Teleport failed!");
     }
 }
 
@@ -100,17 +95,17 @@ class Labyrinth {
         }
         
 
-        let drow = 0;
-        let dcol = 0;
+        let dRow = 0;
+        let dCol = 0;
 
-        if (KeyBoardManager.isUpPressed()) drow = -1;
-        else if (KeyBoardManager.isDownPressed()) drow = 1;
+        if (KeyBoardManager.isUpPressed()) dRow = -1;
+        else if (KeyBoardManager.isDownPressed()) dRow = 1;
 
-        if (KeyBoardManager.isLeftPressed()) dcol = -1;
-        else if (KeyBoardManager.isRightPressed()) dcol = 1;
+        if (KeyBoardManager.isLeftPressed()) dCol = -1;
+        else if (KeyBoardManager.isRightPressed()) dCol = 1;
 
-        const tRow = playerPos.row + drow;
-        const tCol = playerPos.col + dcol;
+        const tRow = playerPos.row + dRow;
+        const tCol = playerPos.col + dCol;
 
         if (tRow >= 0 && tRow < levelData.length && tCol >= 0 && tCol < levelData[tRow].length) {
             const currentItem = levelData[tRow][tCol];
@@ -127,7 +122,7 @@ class Labyrinth {
 
             if (currentItem === LOOT) {
                 const LOOT = Math.round(Math.random() * 7) + 3;
-                playerStats.chash += LOOT_AMOUNT;
+                playerStats.cash += LOOT_AMOUNT;
                 eventText = `Player got ${LOOT_AMOUNT}$`;
             }
             else if (currentItem in DOORS) {
@@ -151,7 +146,7 @@ class Labyrinth {
 
         console.log(ANSI.CLEAR_SCREEN, ANSI.CURSOR_HOME);
 
-        let rendring = this.renderHud();
+        let rendering = this.renderHud();
 
         for (let row = 0; row < levelData.length; row++) {
             let rowRendering = "";
@@ -159,10 +154,10 @@ class Labyrinth {
                 const symbol = levelData[row][col];
                 rowRendering += pallet[symbol] ? pallet[symbol] + symbol + ANSI.COLOR_RESET : symbol;
             }
-            rendring += rowRendering + "\n";
+            rendering += rowRendering + "\n";
         }
 
-        console.log(rendring);
+        console.log(rendering);
         if (eventText) {
             console.log(eventText);
             eventText = "";
@@ -171,7 +166,7 @@ class Labyrinth {
 
 renderHud() {
     const hpBar = `Life:[${ANSI.COLOR.RED}${this.pad(playerStats.hp, "♥︎")}${ANSI.COLOR_RESET}${ANSI.COLOR.LIGHT_GRAY}${this.pad(HP_MAX - playerStats.hp, "♥︎")}${ANSI.COLOR_RESET}]`;
-    const cash = `$:${playerStats.chash}`;
+    const cash = `$:${playerStats.cash}`;
     return `${hpBar} ${cash}\n`;
 }
 
