@@ -17,7 +17,7 @@ const HERO = "H";
 const LOOT = "$";
 const DOOR = "1";
 
-const THINGS = [LOOT, EMPTY, DOOR];
+const THINGS = [LOOT, EMPTY, DOOR, "2"];
 let eventText = "";
 
 const HP_MAX = 10;
@@ -35,6 +35,12 @@ let pallet = {
     "B": ANSI.COLOR.GREEN,
 };
 
+
+const DOORS = {
+    "1": "aSharpPlace",
+    "2": "level3",
+    "1-back": "aSharpPlace"
+};
 class Labyrinth {
 
     update() {
@@ -69,10 +75,11 @@ class Labyrinth {
 
             if (currentItem === LOOT) {
                 const LOOT = Math.round(Math.random() * 7) + 3;
-                playerStats.chash += LOOT;
-                eventText = `Player got ${loot}$`;
-            }else if (currentItem === DOOR) {
-                this.transitionToLevel("aSharpPlace");
+                playerStats.chash += LOOT_AMOUNT;
+                eventText = `Player got ${LOOT_AMOUNT}$`;
+            }
+            else if (currentItem in DOORS) {
+                this.transitionToLevel(DOORS[currentItem]);
                 return;
             }
             

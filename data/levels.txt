@@ -1,2 +1,3 @@
 start:map1.txt
 aSharpPlace:sharp.txt
+level3:map3.txt
