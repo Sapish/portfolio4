@@ -121,7 +121,7 @@ class Labyrinth {
             const currentItem = levelData[tRow][tCol];
 
             if (currentItem === LOOT) {
-                const LOOT = Math.round(Math.random() * 7) + 3;
+                const LOOT_AMOUNT = Math.round(Math.random() * 7) + 3;
                 playerStats.cash += LOOT_AMOUNT;
                 eventText = `Player got ${LOOT_AMOUNT}$`;
             }
